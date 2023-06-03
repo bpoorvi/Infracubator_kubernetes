@@ -21,4 +21,4 @@ Kubectl create  -f pod-definition.yaml
 
 5.Describe the Pod : Kubectl describe pod metaservice
 
-6.Exec into a container - 	kubectl exec -i -t metaservice --container metac -- /bin/sh
+6.Exec into a container - kubectl exec -i -t metaservice --container metac -- /bin/sh
