@@ -1,0 +1,53 @@
+1. Create Replica set and deploy, add livenessProbe and readinessProbe
+
+metservice-rs.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+ name: metadata-service
+ labels:
+  tier: metadata-service
+spec:
+ replicas: 2
+ selector:
+  matchLabels:
+   tier: metadata-service
+ template:
+  metadata:
+   labels:
+    tier: metadata-service
+  spec:
+   containers:
+   - image: luckyganesh/metadata-service:v1-arm
+     name: metac-rs
+     ports:
+     - containerPort: 8080
+     livenessProbe:
+      httpGet:
+       path: /actuator/health
+       port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 20
+      timeoutSeconds: 10
+     readinessProbe:
+      httpGet:
+       path: /actuator/health
+       port: 8080
+      initialDelaySeconds: 30
+      periodSeconds: 20
+      timeoutSeconds: 10
+
+kubectl create -f metservice-rs.yaml
+
+kubectl get replicasets
+
+kubectl get pods
+
+2.To create a meta entry in the database,did a port forwarding from container pod to localhost
+
+curl http://localhost:8090/metadata, returned empty
+curl --header "Content-Type: application/json" --request POST --data '{"group":"sunitparekh", "name":"city","value": "Pune"}' "http://localhost:8090/metadata"
+this command created a meta entry and returned - {"id":"6469031c4cedfd000109b6b6","message":"Successfully saved metadata."}%     
+
+on running curl http://localhost:8090/metadata, last created entry was returned.
