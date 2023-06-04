@@ -1,0 +1,52 @@
+Persistent volume as hostpath
+
+In mongodb-pod-definition.yaml, hostPath defined as /data
+
+apiVersion: v1
+kind: Pod
+metadata:
+ name: mongo-pod
+ labels:
+   db: mymongodb
+spec:
+ containers:
+ - name: mongo-container
+   image: mongo
+   ports:
+   - containerPort: 8080
+   volumeMounts:
+   - mountPath: /data/db
+     name: mongo-volume
+ volumes:
+ - name: mongo-volume
+   hostPath:
+    path: /data
+    type: DirectoryOrCreate
+
+kubectl create -f mongodb-pod-definition.yaml
+
+restarted the metadata-service pods after creating mongo pod.
+
+Port forward to 8090 to add some data and verify,
+kubectl port-forward metadata-service-ztg97 8090:8080
+
+Ran curl command and added some test data to the db,
+
+To verify the hostPath,login to node minikube
+
+ minikube ssh
+cd /data/
+ and verified the collection files created by mongo DB for the added data.
+
+To verify hostPath has the same data as container,
+
+kubectl exec -it mongo-pod -- sh
+inside shell cd /data/db
+
+Verifed same collections files as hostPath for the added entry in DB
+
+kubectl delete pod mongo-pod - to delete the mongo pod
+
+Verified the database entry still exists on hostPath even after deleting the mongo pod.
+
+
