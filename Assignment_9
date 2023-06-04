@@ -1,0 +1,44 @@
+Fetch the secret value for the data using - echo -n 'mongodb://mongo/metadata'| base64 
+
+Creating a secret yaml file for the metadata service,
+
+kind: Secret
+metadata:
+ name: metservice-secret
+data:
+ MONGODB_URI bW9uZ29kYjovL21vbmdvL21ldGFkYXRh
+
+kubectl create -f metservice-rs_secret.yaml 
+
+Configuring secret file in the pod definition,
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+ name: metadata-service
+ labels:
+  tier: metadata-service
+spec:
+ replicas: 2
+ selector:
+  matchLabels:
+   tier: metadata-service
+ template:
+  metadata:
+   labels:
+    tier: metadata-service
+  spec:
+   containers:
+   - image: luckyganesh/metadata-service:v2-arm
+     name: metac-rs
+     envFrom:
+     - secretRef:
+        name: metservice-secret
+     ports:
+     - containerPort: 8080
+
+
+
+
+
+
