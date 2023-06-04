@@ -1,0 +1,41 @@
+Creating a config map for Mongo URI, metservice_config-map.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+ name: metservice-config
+data:
+ MONGODB_URI: mongodb://mongo/metadata
+
+kubectl create -f metservice_config-map.yaml
+
+configuring configmap into the pod,
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+ name: metadata-service
+ labels:
+  tier: metadata-service
+spec:
+ replicas: 2
+ selector:
+  matchLabels:
+   tier: metadata-service
+ template:
+  metadata:
+   labels:
+    tier: metadata-service
+  spec:
+   containers:
+   - image: luckyganesh/metadata-service:v2-arm
+     name: metac-rs
+     envFrom:
+     - configMapRef:
+        name: metservice-config
+     ports:
+     - containerPort: 8080
+
+kubectl create -f metservice-rs_configmap.yaml
+
+ 
