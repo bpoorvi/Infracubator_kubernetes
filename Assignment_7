@@ -1,0 +1,71 @@
+Persistent Volume, pv-definition.yaml, hostPath defined as /data/pvcTest
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+ name: pv-vol1
+spec:
+ storageClassName: manual
+ accessModes:
+ - ReadWriteOnce
+ capacity:
+  storage: 1Gi
+ hostPath:
+  path: /data/pvcTest
+
+kubectl create -f pv-definition.yaml
+kubectl get pv
+
+Persistent Volume claim , pvc-definition.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: pv-claim
+spec:
+ storageClassName: manual
+ accessModes:
+ - ReadWriteOnce
+ resources:
+  requests:
+   storage: 1Gi
+
+kubectl create -f pvc-definition.yaml
+kubectl get pvc
+
+Updated Pod to run mongo DB with persistent volume claim
+
+apiVersion: v1
+kind: Pod
+metadata:
+ name: mongo-pod
+ labels:
+   db: mymongodb
+spec:
+ containers:
+ - name: mongo-container
+   image: mongo
+   ports:
+   - containerPort: 8080
+   volumeMounts:
+   - mountPath: /data/db
+     name: mongo-volume
+ volumes:
+ - name: mongo-volume
+   persistentVolumeClaim:
+    claimName: pv-claim
+
+Port forward to send curl request to add an entry to DB
+kubectl port-forward metadata-service-rbb4b 8090:8080
+curl --header "Content-Type: application/json" --request POST --data '{"group":"test", "name":"city","value": "Pune"}' "http://localhost:8090/metadata"
+
+ and verified the collection files created by mongo DB for the added data.( minikube ssh -> cd/data/pvcTest
+
+exec into mongo pod - kubectl exec -it mongo-pod -- sh 
+# cd /data/db
+Verifed same collections files as hostPath for the added entry in DB
+
+kubectl delete pod mongo-pod - to delete the mongo pod
+
+Verified the database entry still exists on hostPath even after deleting the mongo pod.
+
