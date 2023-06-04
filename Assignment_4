@@ -1,0 +1,77 @@
+1.Deploy new pod using mongodb image,created mongodb-pod-definition.yaml,
+apiVersion: v1
+kind: Pod
+metadata:
+ name: mongo-pod
+ labels:
+   db: mymongodb
+spec:
+ containers:
+ - name: mongo-container
+   image: mongo
+   ports:
+   - containerPort: 8080
+
+2.ClusterIP service for mongo db,created mongodb-cluster-ip.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+ name: mongo
+ labels:
+  db: mymongodb
+spec:
+ type: ClusterIP
+ ports:
+ - port: 27017
+   targetPort: 27017
+ selector:
+  db: mymongodb
+
+create pod & service
+
+kubectl create -f mongodb-pod-definition.yaml
+
+kubectl create -f mongodb-cluster-ip.yaml
+
+3.Updated image in metadata service.Also, updated the file to add environment variable to connect to mongo DB
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+ name: metadata-service
+ labels:
+  tier: metadata-service
+spec:
+ replicas: 2
+ selector:
+  matchLabels:
+   tier: metadata-service
+ template:
+  metadata:
+   labels:
+    tier: metadata-service
+  spec:
+   containers:
+   - image: luckyganesh/metadata-service:v2-arm
+     name: metac-rs
+     env:
+     - name: MONGODB_URI
+       value: mongodb://mongo/metadata
+     ports:
+     - containerPort: 8080
+
+To check curl commands, port forward to port 8090 
+
+kubectl port-forward metadata-service-9w2jm 8090:8080
+curl http://localhost:8090/metadata
+curl --header "Content-Type: application/json" --request POST --data '{"group":"sunitparekh", "name":"city","value": "Pune"}' "http://localhost:8090/metadata"
+
+when curl http://localhost:8090/metadata is run again, it returns the data added by POST reuest back,
+[{"group":"sunitparekh","lastUpdatedTs":"2023-05-21T17:24:47.894","name":"city","id":"646a53d446e0fb0001b1e032"}]
+
+
+
+
+
+
