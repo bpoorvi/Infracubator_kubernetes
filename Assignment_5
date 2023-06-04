@@ -1,0 +1,47 @@
+1.Deployment object for MetadataService, metadata-service-deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metaservice-deployment
+  labels:
+    app: metaservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: metaservice
+  template:
+    metadata:
+      labels:
+        app: metaservice
+    spec:
+      containers:
+      - name: metaservice-container
+        image: luckyganesh/metadata-service:v1-arm
+        ports:
+        - containerPort: 8080
+
+2.Deployment object for Mongo DataBase, mongodb-deployment-definition.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: mymongodb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mymongodb
+  template:
+    metadata:
+      labels:
+        app: mymongodb
+    spec:
+      containers:
+      - name: mongo-container
+        image: mongo
+        ports:
+        - containerPort: 8080
