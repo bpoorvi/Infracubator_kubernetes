@@ -1,1 +1,41 @@
+Created a nodeport service for metadata-service replicaset
+
+apiVersion: v1
+kind: Service
+metadata:
+ name: metadata-service
+spec:
+ type: NodePort
+ ports:
+ - targetPort: 8080
+   port: 8080
+   nodePort: 30080
+ selector:
+  tier: metadata-service
+
+verify after creating service - kubectl get svc
+
+kubectl describe service metadata-service
+Name:                     metadata-service
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 tier=metadata-service
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.101.159.155
+IPs:                      10.101.159.155
+Port:                     <unset>  8080/TCP
+TargetPort:               8080/TCP
+NodePort:                 <unset>  30080/TCP
+Endpoints:                172.17.0.2:8080,172.17.0.3:8080
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+
+Could not access the minikube ip with the port 30080, 
+kubectl get service metadata-service --output='jsonpath="{.spec.ports[0].nodePort}"'
+Tried the above commad , it returned the correct port mapped but could not access through minikube internal ip. (running this on M1)
+
 
